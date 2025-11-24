@@ -63,9 +63,27 @@ services:
     networks:
       - studyrepo_network
 
+  # pgAdmin - веб-интерфейс для управления PostgreSQL
+  pgadmin:
+    container_name: studyrepo_pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - studyrepo_network
+
 volumes:
   postgres_data:
   backend_media:
+  pgadmin_data:
 
 networks:
   studyrepo_network:

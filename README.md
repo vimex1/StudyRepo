@@ -103,6 +103,9 @@ docker compose exec backend python manage.py createsuperuser
 - **Frontend:** http://localhost:3000
 - **Backend API:** http://localhost:8000
 - **Django Admin:** http://localhost:8000/admin/
+- **pgAdmin (PostgreSQL):** http://localhost:5050
+  - Email: `admin@admin.com` (по умолчанию)
+  - Password: `admin` (по умолчанию)
 - **API Docs:** http://localhost:8000/api/docs (если настроено)
 
 ## 💻 Локальная разработка
@@ -266,6 +269,10 @@ docker compose logs -f
 docker compose logs -f backend
 docker compose logs -f frontend
 docker compose logs -f db
+docker compose logs -f pgadmin
+
+# Подключение к БД через psql
+docker compose exec db psql -U postgres -d studyrepo
 
 # Пересборка образов
 docker compose up -d --build
@@ -338,6 +345,50 @@ npm run lint
 | `BACKEND_PORT` | Порт бэкенда | `8000` |
 | `FRONTEND_PORT` | Порт фронтенда | `3000` |
 | `POSTGRES_PORT` | Порт PostgreSQL | `5432` |
+| `PGADMIN_PORT` | Порт pgAdmin | `5050` |
+| `PGADMIN_EMAIL` | Email для pgAdmin | `admin@admin.com` |
+| `PGADMIN_PASSWORD` | Пароль для pgAdmin | `admin` |
+
+## 🗄️ Работа с базой данных
+
+### Просмотр БД через pgAdmin (веб-интерфейс)
+
+1. Откройте http://localhost:5050 в браузере
+2. Войдите с учетными данными:
+   - Email: `admin@admin.com` (или значение из `PGADMIN_EMAIL`)
+   - Password: `admin` (или значение из `PGADMIN_PASSWORD`)
+3. Добавьте новый сервер:
+   - **Name:** StudyRepo DB (любое имя)
+   - **Host:** `db` (имя сервиса в docker-compose)
+   - **Port:** `5432`
+   - **Username:** `postgres` (или значение из `POSTGRES_USER`)
+   - **Password:** `postgres` (или значение из `POSTGRES_PASSWORD`)
+   - **Database:** `studyrepo` (или значение из `POSTGRES_DB`)
+
+### Просмотр БД через командную строку
+
+```bash
+# Подключиться к БД через psql
+docker compose exec db psql -U postgres -d studyrepo
+
+# Или используя Make
+make shell-db
+```
+
+В psql вы можете выполнять SQL команды:
+```sql
+\dt              -- Показать все таблицы
+\d table_name    -- Показать структуру таблицы
+SELECT * FROM table_name;  -- Выбрать данные
+\q               -- Выйти
+```
+
+### Просмотр БД через Django Admin
+
+Django Admin также позволяет просматривать данные моделей:
+- Откройте http://localhost:8000/admin/
+- Войдите с учетными данными суперпользователя
+- Выберите нужную модель для просмотра
 
 ## 🐛 Решение проблем
 

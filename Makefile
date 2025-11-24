@@ -45,6 +45,11 @@ shell: ## Открыть shell в контейнере бэкенда
 shell-db: ## Открыть psql в контейнере БД
 	docker compose exec db psql -U postgres -d studyrepo
 
+pgadmin: ## Открыть pgAdmin в браузере
+	@echo "$(GREEN)pgAdmin доступен по адресу: http://localhost:5050$(RESET)"
+	@echo "$(YELLOW)Email: admin@admin.com$(RESET)"
+	@echo "$(YELLOW)Password: admin$(RESET)"
+
 migrate: ## Применить миграции Django
 	docker compose exec backend python manage.py migrate
 
