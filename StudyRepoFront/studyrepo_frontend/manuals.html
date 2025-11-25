@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LabHub - Manuals</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: "Inter", sans-serif;
+            }
+
+            body {
+                background: #f8fafc;
+                color: #111;
+            }
+
+            /* --- Header --- */
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.2rem 2rem;
+                background: #fff;
+                border-bottom: 1px solid #e5e7eb;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: #111;
+                text-decoration: none;
+            }
+
+            nav {
+                display: flex;
+                gap: 2rem;
+            }
+
+            nav a {
+                text-decoration: none;
+                color: #4b5563;
+                font-weight: 500;
+                position: relative;
+                transition: color 0.3s;
+            }
+
+            nav a:hover {
+                color: #000;
+            }
+
+            nav a.active::after {
+                content: "";
+                position: absolute;
+                bottom: -6px;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: #4f46e5;
+                border-radius: 4px;
+            }
+
+            .account-btn {
+                background: #0f172a;
+                color: #fff;
+                padding: 0.5rem 1.2rem;
+                border: none;
+                border-radius: 999px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.3s, transform 0.2s;
+            }
+
+            .account-btn:hover {
+                background: #1e293b;
+                transform: translateY(-2px);
+            }
+
+            /* --- Main Content --- */
+            main {
+                padding: 2rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+                font-weight: 600;
+                margin-bottom: 1.8rem;
+            }
+
+            .manuals-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .manual-card {
+                background: #fff;
+                border-radius: 16px;
+                padding: 2rem 1rem;
+                text-align: center;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                transition: transform 0.2s, box-shadow 0.2s;
+                cursor: pointer;
+            }
+
+            .manual-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            }
+
+            .manual-card img {
+                width: 48px;
+                margin-bottom: 1rem;
+            }
+
+            .manual-card h3 {
+                font-size: 1rem;
+                font-weight: 600;
+                margin-bottom: 0.3rem;
+                color: #1e1e1e;
+            }
+
+            .manual-card p {
+                font-size: 0.85rem;
+                color: #6b7280;
+            }
+
+            /* --- Footer --- */
+            footer {
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                font-size: 0.8rem;
+                color: #6b7280;
+                margin: 1rem 2rem 2rem 2rem;
+            }
+
+            .footer-left span {
+                color: #6366f1;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <a href="index.html" class="logo">LabHub</a>
+            <nav>
+                <a href="index.html">Labs</a>
+                <a href="#" class="active">Manuals</a>
+                <a href="#">Search</a>
+            </nav>
+            <button class="account-btn">Account</button>
+        </header>
+
+        <main>
+            <h2>Diacntmbolc of subjects</h2>
+
+            <div class="manuals-grid">
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/1048/1048941.png"
+                        alt="subject1"
+                    />
+                    <h3>Предмет№1</h3>
+                    <p>Описание</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/3076/3076933.png"
+                        alt="subject2"
+                    />
+                    <h3>Предмет№2</h3>
+                    <p>Описание</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/2332/2332493.png"
+                        alt="subject3"
+                    />
+                    <h3>Предмет№3</h3>
+                    <p>Описание</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/5968/5968364.png"
+                        alt="logic"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/2345/2345452.png"
+                        alt="subject4"
+                    />
+                    <h3>Предмет№4</h3>
+                    <p>Описание</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/3242/3242257.png"
+                        alt="subject5"
+                    />
+                    <h3>Предмет№5</h3>
+                    <p>Methodology & Results</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/4272/4272388.png"
+                        alt="subject6"
+                    />
+                    <h3>Предмет№6</h3>
+                    <p>Описание</p>
+                </div>
+
+                <div class="manual-card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/2910/2910768.png"
+                        alt="logic"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Made with <span>💜</span> by LabHub</p>
+        </footer>
+    </body>
+</html>

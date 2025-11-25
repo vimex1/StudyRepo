@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>LabHub</title>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                font-family: "Inter", sans-serif;
+            }
+
+            body {
+                background: #f8fafc;
+                color: #111;
+            }
+
+            /* --- Header --- */
+            header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.2rem 2rem;
+                background: #fff;
+                border-bottom: 1px solid #e5e7eb;
+                border-radius: 12px 12px 0 0;
+                position: relative;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+                font-weight: 700;
+            }
+
+            nav {
+                display: flex;
+                gap: 2rem;
+            }
+
+            nav a {
+                text-decoration: none;
+                color: #4b5563;
+                font-weight: 500;
+                position: relative;
+                transition: color 0.3s;
+            }
+
+            nav a:hover {
+                color: #000;
+            }
+
+            nav a.active::after {
+                content: "";
+                position: absolute;
+                bottom: -6px;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: #000;
+                border-radius: 4px;
+            }
+
+            .account-btn {
+                background: #0f172a;
+                color: #fff;
+                padding: 0.5rem 1.2rem;
+                border: none;
+                border-radius: 999px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.3s, transform 0.2s;
+            }
+
+            .account-btn:hover {
+                background: #1e293b;
+                transform: translateY(-2px);
+            }
+
+            /* --- Registration Popup --- */
+            .register-popup {
+                position: absolute;
+                top: 80px;
+                right: 2rem;
+                width: 280px;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+                padding: 1.5rem;
+                opacity: 0;
+                transform: translateY(-15px);
+                pointer-events: none;
+                transition: all 0.3s ease;
+                z-index: 100;
+            }
+
+            .register-popup.active {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: all;
+            }
+
+            .register-popup .icon {
+                font-size: 1.5rem;
+                color: #6366f1;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .register-popup input {
+                width: 100%;
+                padding: 0.5rem 0.8rem;
+                margin-bottom: 0.8rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                outline: none;
+                transition: border-color 0.3s;
+            }
+
+            .register-popup input:focus {
+                border-color: #6366f1;
+            }
+
+            .register-popup button {
+                width: 100%;
+                background: #6366f1;
+                color: #fff;
+                border: none;
+                padding: 0.6rem 1rem;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.3s, transform 0.2s;
+            }
+
+            .register-popup button:hover {
+                background: #4f46e5;
+                transform: translateY(-1px);
+            }
+
+            .register-popup p {
+                font-size: 0.85rem;
+                color: #6b7280;
+                text-align: center;
+                margin-top: 0.8rem;
+            }
+
+            .register-popup p a {
+                color: #4f46e5;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            /* --- Hero --- */
+            .hero {
+                margin: 2rem;
+                border-radius: 20px;
+                overflow: hidden;
+                background: linear-gradient(90deg, #b3d4fc, #a78bfa);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+            }
+
+            .hero img {
+                max-width: 320px;
+                width: 100%;
+            }
+
+            /* --- Cards --- */
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1.5rem;
+                margin: 2rem;
+            }
+
+            .card {
+                background: #fff;
+                border-radius: 16px;
+                padding: 1rem;
+                text-align: left;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            }
+
+            .card img {
+                width: 100%;
+                border-radius: 12px;
+                margin-bottom: 0.8rem;
+            }
+
+            .card h3 {
+                font-size: 1rem;
+                font-weight: 600;
+                margin-bottom: 0.3rem;
+            }
+
+            .card p {
+                color: #6b7280;
+                font-size: 0.9rem;
+            }
+
+            /* --- Footer --- */
+            footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.8rem;
+                color: #6b7280;
+                margin: 1rem 2rem 2rem 2rem;
+            }
+
+            .footer-left {
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+
+            .footer-left span {
+                font-weight: 600;
+                color: #6366f1;
+            }
+
+            .updated {
+                background: #f1f5f9;
+                padding: 0.3rem 0.8rem;
+                border-radius: 999px;
+            }
+        </style>
+        <script src="index.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <div class="logo">LabHub</div>
+                <nav>
+                    <a href="labs.html" class="active">Labs</a>
+                    <a href="manuals.html">Manuals</a>
+                    <a href="#">Search</a>
+                </nav>
+                <button class="account-btn" id="accountBtn">Account</button>
+
+                <!-- Popup -->
+                <div class="register-popup" id="registerPopup">
+                    <div class="icon">ℹ️</div>
+                    <input type="email" placeholder="Email" />
+                    <input type="password" placeholder="Пароль" />
+                    <input type="password" placeholder="Подтвердите пароль" />
+                    <button>Зарегистрироваться</button>
+                    <p>Уже есть аккаунт? <a href="#">Войти</a></p>
+                </div>
+            </header>
+
+            <section class="hero">
+                <img
+                    src="https://cdn-icons-png.flaticon.com/512/992/992703.png"
+                    alt="Lab Icon"
+                />
+            </section>
+
+            <!-- Обновленный блок карточек -->
+            <section class="cards">
+                <a href="labs.html" class="card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/5968/5968364.png"
+                        alt="Circuit board"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </a>
+
+                <a href="labs.html" class="card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/2942/2942789.png"
+                        alt="Molecule"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </a>
+
+                <a href="labs.html" class="card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/3211/3211362.png"
+                        alt="Code chart"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </a>
+
+                <a href="labs.html" class="card">
+                    <img
+                        src="https://cdn-icons-png.flaticon.com/512/992/992651.png"
+                        alt="Graph"
+                    />
+                    <h3>Digital Logic Lab</h3>
+                    <p>Methodology & Results</p>
+                </a>
+            </section>
+
+            <footer>
+                <div class="footer-left">
+                    <p>Made with <span>💜</span> by LabHub</p>
+                </div>
+                <div class="updated">Updated: May 2024</div>
+            </footer>
+        </div>
+
+        <script>
+            const accountBtn = document.getElementById("accountBtn");
+            const popup = document.getElementById("registerPopup");
+
+            accountBtn.addEventListener("click", () => {
+                popup.classList.toggle("active");
+            });
+
+            // закрытие при клике вне окна
+            document.addEventListener("click", (e) => {
+                if (
+                    !popup.contains(e.target) &&
+                    !accountBtn.contains(e.target)
+                ) {
+                    popup.classList.remove("active");
+                }
+            });
+        </script>
+    </body>
+</html>
