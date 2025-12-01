@@ -403,3 +403,100 @@ nav a.active::after {
         transform: scale(1);
     }
 }
+.account-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    border: 1px solid #e5e7eb;
+    min-width: 180px;
+    z-index: 20;
+}
+
+.account-menu-username {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.account-menu-username span {
+    font-weight: 600;
+    color: #111827;
+}
+
+.account-menu-logout {
+    width: 100%;
+    border: none;
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: #fee2e2;
+    color: #b91c1c;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.account-menu-logout:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+
+.auth-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    background: #f3f4f6;
+    padding: 0.25rem;
+    border-radius: 999px;
+}
+
+.auth-toggle-btn {
+    flex: 1;
+    border: none;
+    border-radius: 999px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: transparent;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.auth-toggle-btn.active {
+    background: #111827;
+    color: #f9fafb;
+}
+
+.auth-title {
+    margin: 0 0 0.75rem 0;
+}
+
+.auth-form input {
+    width: 100%;
+    margin-bottom: 0.6rem;
+}
+
+.auth-error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin: 0.25rem 0 0.5rem 0;
+}
+
+.auth-switch-text {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.link-button {
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    color: #2563eb;
+    font-weight: 500;
+}
