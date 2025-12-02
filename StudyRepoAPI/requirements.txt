@@ -1,0 +1,11 @@
+Django>=4.2,<5.0
+django-environ
+psycopg2-binary
+django-extensions
+django-ninja
+django-ninja-extra    
+django-mimja-jwt  
+djangorestframework     
+django-cors-headers
+pillow                  
+gunicorn
