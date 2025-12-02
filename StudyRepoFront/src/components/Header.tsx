@@ -15,20 +15,17 @@ const Header = ({
     const [currentUser, setCurrentUser] = useState<string | null>(null);
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
-    // Регистрация
     const [regUsername, setRegUsername] = useState("");
     const [regEmail, setRegEmail] = useState("");
     const [regPassword1, setRegPassword1] = useState("");
     const [regPassword2, setRegPassword2] = useState("");
 
-    // Логин
     const [loginUsername, setLoginUsername] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Подхватываем юзера из localStorage при загрузке
     useEffect(() => {
         if (typeof window === "undefined") return;
         const storedUsername = window.localStorage.getItem("labhub_username");
@@ -39,10 +36,8 @@ const Header = ({
 
     const handleAccountClick = () => {
         if (currentUser) {
-            // Если уже залогинен — открываем меню с "Выйти"
             setIsAccountMenuOpen((prev) => !prev);
         } else {
-            // Если не залогинен — открываем модалку авторизации
             setIsLoginMode(true);
             setIsModalOpen(true);
             setError(null);
@@ -114,7 +109,6 @@ const Header = ({
                         }
                     }
                 } catch {
-                    // ignore parse error
                 }
                 throw new Error(message);
             }
@@ -123,12 +117,10 @@ const Header = ({
             try {
                 authData = await response.json();
             } catch {
-                // если register ничего не вернул — ок
             }
 
             saveAuthState(regUsername, authData);
 
-            // очистили поля
             setRegUsername("");
             setRegEmail("");
             setRegPassword1("");
@@ -182,7 +174,6 @@ const Header = ({
                         }
                     }
                 } catch {
-                    // ignore parse error
                 }
                 throw new Error(message);
             }
@@ -191,7 +182,6 @@ const Header = ({
             try {
                 authData = await response.json();
             } catch {
-                // если login вернул пусто — ок
             }
 
             saveAuthState(loginUsername, authData);
@@ -255,7 +245,7 @@ const Header = ({
                     onClick={() => setActiveSection("manuals")}
                     className={activeSection === "manuals" ? "active" : ""}
                 >
-                    Manuals
+                    Дисциплины
                 </a>
                 <a
                     href="#"
