@@ -1,10 +1,15 @@
 const Hero = () => {
     return (
         <section className="hero">
-            <img
-                src="https://cdn-icons-png.flaticon.com/512/992/992703.png"
-                alt="Lab Icon"
-            />
+            <div className="hero-content">
+                <h1 className="hero-title">LibHub</h1>
+                <p className="hero-subtitle">Единый центр лабораторных работ</p>
+                <p className="hero-description">
+                    Собирайте методические материалы, лабораторные задания и
+                    решения в одном месте. Структурировано по дисциплинам для
+                    преподавателей и студентов.
+                </p>
+            </div>
         </section>
     );
 };

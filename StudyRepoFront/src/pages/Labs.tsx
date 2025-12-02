@@ -17,15 +17,15 @@ type Task = {
     status?: string;
     created_at?: string;
     topic?: Topic | number | string | null;
-    file_url?: string;
-    url?: string;
-    file?: string;
+    has_solution?: boolean;
+    solution_available?: boolean;
+    solution?: string | null;
     [key: string]: any;
 };
 
 type EnrichedTask = Task & {
-    __topicId?: number | string;
-    __topicTitle?: string;
+    __topicId: number | string;
+    __topicTitle: string;
 };
 
 const PAGE_SIZE = 10;
@@ -42,6 +42,11 @@ const Labs: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [topicFilter, setTopicFilter] = useState<string>("all");
     const [page, setPage] = useState(1);
+
+    const [downloading, setDownloading] = useState<{
+        id: number | string;
+        kind: "file" | "solution";
+    } | null>(null);
 
     const getAccessToken = (): string | null => {
         if (typeof window === "undefined") return null;
@@ -67,11 +72,6 @@ const Labs: React.FC = () => {
         );
     };
 
-    const normalizeStatus = (status?: string | null): string | undefined => {
-        if (!status) return status ?? undefined;
-        return status.replace(/\s+/g, "_");
-    };
-
     const getTaskTitle = (task: Task): string => {
         return (
             task.title ||
@@ -82,16 +82,9 @@ const Labs: React.FC = () => {
         );
     };
 
-    const getTaskDownloadUrl = (task: Task): string | null => {
-        if (task.file_url && typeof task.file_url === "string")
-            return task.file_url;
-        if (task.file && typeof task.file === "string") return task.file;
-        if (task.url && typeof task.url === "string") return task.url;
-        if (task.document && typeof task.document === "string")
-            return task.document;
-        if (task.attachment && typeof task.attachment === "string")
-            return task.attachment;
-        return null;
+    const normalizeStatus = (status?: string | null): string | undefined => {
+        if (!status) return status ?? undefined;
+        return status.replace(/\s+/g, "_");
     };
 
     const formatDate = (value?: string): string => {
@@ -105,6 +98,18 @@ const Labs: React.FC = () => {
         }
     };
 
+    const hasSolution = (task: Task): boolean => {
+        const raw =
+            (task as any).has_solution ??
+            (task as any).hasSolution ??
+            (task as any).solution_available ??
+            (task as any).solution;
+        if (typeof raw === "boolean") return raw;
+        if (typeof raw === "number") return raw === 1;
+        if (typeof raw === "string") return raw.trim().length > 0;
+        return false;
+    };
+
     const loadTopics = async () => {
         setTopicsLoading(true);
         setTopicsError(null);
@@ -113,9 +118,7 @@ const Labs: React.FC = () => {
                 Accept: "application/json",
             };
             const token = getAccessToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
+            if (token) headers["Authorization"] = `Bearer ${token}`;
 
             const response = await fetch(`${API_BASE_URL}/api/labs/topics`, {
                 method: "GET",
@@ -154,9 +157,7 @@ const Labs: React.FC = () => {
             Accept: "application/json",
         };
         const token = getAccessToken();
-        if (token) {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
+        if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const response = await fetch(
             `${API_BASE_URL}/api/labs/tasks/${topic.id}`,
@@ -168,9 +169,7 @@ const Labs: React.FC = () => {
                 return [];
             }
             throw new Error(
-                `Не удалось загрузить материалы для дисциплины ${getTopicTitle(
-                    topic
-                )}`
+                `Не удалось загрузить материалы для ${getTopicTitle(topic)}`
             );
         }
 
@@ -197,28 +196,22 @@ const Labs: React.FC = () => {
     const loadAllTasks = async (topicsToUse: Topic[]) => {
         setTasksLoading(true);
         setTasksError(null);
-        try {
-            const allTasks: EnrichedTask[] = [];
 
-            const chunks = await Promise.all(
+        try {
+            const results = await Promise.all(
                 topicsToUse.map((topic) =>
-                    loadTasksForTopic(topic).catch(() => {
-                        return [] as EnrichedTask[];
-                    })
+                    loadTasksForTopic(topic).catch(() => [] as EnrichedTask[])
                 )
             );
+            const merged = results.flat();
 
-            chunks.forEach((chunk) => {
-                allTasks.push(...chunk);
-            });
-
-            allTasks.sort((a, b) => {
+            merged.sort((a, b) => {
                 const da = a.created_at ? new Date(a.created_at).getTime() : 0;
                 const db = b.created_at ? new Date(b.created_at).getTime() : 0;
                 return db - da;
             });
 
-            setTasks(allTasks);
+            setTasks(merged);
         } catch (e: any) {
             setTasksError(e.message || "Не удалось загрузить материалы");
         } finally {
@@ -227,9 +220,7 @@ const Labs: React.FC = () => {
     };
 
     useEffect(() => {
-        (async () => {
-            await loadTopics();
-        })();
+        loadTopics();
     }, []);
 
     useEffect(() => {
@@ -286,18 +277,76 @@ const Labs: React.FC = () => {
         return filteredTasks.slice(start, end);
     }, [filteredTasks, page]);
 
-    const handlePrevPage = () => {
-        setPage((prev) => Math.max(1, prev - 1));
-    };
-
-    const handleNextPage = () => {
+    const handlePrevPage = () => setPage((prev) => Math.max(1, prev - 1));
+    const handleNextPage = () =>
         setPage((prev) => Math.min(totalPages, prev + 1));
+
+    const downloadTaskFile = async (task: Task, kind: "file" | "solution") => {
+        if (!task.id) return;
+        const token = getAccessToken();
+        if (!token) {
+            alert("Сначала войдите в систему, чтобы скачивать файлы.");
+            return;
+        }
+
+        setDownloading({ id: task.id, kind });
+
+        try {
+            const headers: HeadersInit = { Accept: "*/*" };
+            headers["Authorization"] = `Bearer ${token}`;
+
+            const suffix =
+                kind === "solution" ? "download-solution" : "download";
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/labs/tasks/${task.id}/${suffix}`,
+                { method: "GET", headers }
+            );
+
+            if (!response.ok) {
+                if (response.status === 404 && kind === "solution") {
+                    alert("Для этого материала нет загруженного решения.");
+                    return;
+                }
+                throw new Error("Не удалось скачать файл.");
+            }
+
+            const blob = await response.blob();
+
+            let filename = `task-${task.id}${
+                kind === "solution" ? "-solution" : ""
+            }`;
+            const disposition =
+                response.headers.get("Content-Disposition") ||
+                response.headers.get("content-disposition");
+
+            if (disposition) {
+                const match = disposition.match(
+                    /filename\*?=(?:UTF-8''|")?([^\";]+)/i
+                );
+                if (match && match[1]) {
+                    filename = decodeURIComponent(match[1].replace(/"/g, ""));
+                }
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e: any) {
+            alert(e.message || "Ошибка при скачивании файла.");
+        } finally {
+            setDownloading(null);
+        }
     };
 
     return (
         <div className="labs-page">
             <h1>Материалы</h1>
-
             <p className="page-subtitle">
                 Полный список лабораторных, задач и методических материалов по
                 всем дисциплинам.
@@ -310,7 +359,7 @@ const Labs: React.FC = () => {
                         id="labs-search-input"
                         type="text"
                         className="search-input"
-                        placeholder="Название, тип, статус или дисциплина..."
+                        placeholder="Название материала или дисциплины..."
                         value={searchQuery}
                         onChange={handleSearchChange}
                     />
@@ -371,16 +420,23 @@ const Labs: React.FC = () => {
                                     <th>Дисциплина</th>
                                     <th>Дата</th>
                                     <th>Статус</th>
-                                    <th>Файл</th>
+                                    <th>Файлы</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {paginatedTasks.map((task) => {
-                                    const downloadUrl =
-                                        getTaskDownloadUrl(task);
                                     const statusKey = normalizeStatus(
                                         task.status
                                     );
+                                    const isFileLoading =
+                                        downloading &&
+                                        downloading.id === task.id &&
+                                        downloading.kind === "file";
+                                    const isSolutionLoading =
+                                        downloading &&
+                                        downloading.id === task.id &&
+                                        downloading.kind === "solution";
+
                                     return (
                                         <tr key={task.id ?? getTaskTitle(task)}>
                                             <td>{getTaskTitle(task)}</td>
@@ -405,20 +461,47 @@ const Labs: React.FC = () => {
                                                 )}
                                             </td>
                                             <td>
-                                                {downloadUrl ? (
-                                                    <a
-                                                        href={downloadUrl}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
+                                                <div className="download-group">
+                                                    <button
+                                                        type="button"
                                                         className="download-link"
+                                                        onClick={() =>
+                                                            downloadTaskFile(
+                                                                task,
+                                                                "file"
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isFileLoading ||
+                                                            false
+                                                        }
                                                     >
-                                                        Скачать
-                                                    </a>
-                                                ) : (
-                                                    <span className="muted">
-                                                        —
-                                                    </span>
-                                                )}
+                                                        {isFileLoading
+                                                            ? "Файл..."
+                                                            : "Файл"}
+                                                    </button>
+
+                                                    {hasSolution(task) && (
+                                                        <button
+                                                            type="button"
+                                                            className="download-link download-link-secondary"
+                                                            onClick={() =>
+                                                                downloadTaskFile(
+                                                                    task,
+                                                                    "solution"
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                isSolutionLoading ||
+                                                                false
+                                                            }
+                                                        >
+                                                            {isSolutionLoading
+                                                                ? "Решение..."
+                                                                : "Решение"}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );

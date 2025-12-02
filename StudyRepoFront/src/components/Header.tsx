@@ -26,6 +26,15 @@ const Header = ({
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const handleProtectedNavClick = (section: string) => {
+        if ((section === "labs" || section === "manuals") && !currentUser) {
+            setIsLoginMode(true);
+            setIsModalOpen(true);
+            return;
+        }
+        setActiveSection(section);
+    };
+
     useEffect(() => {
         if (typeof window === "undefined") return;
         const storedUsername = window.localStorage.getItem("labhub_username");
@@ -108,16 +117,14 @@ const Header = ({
                             }
                         }
                     }
-                } catch {
-                }
+                } catch {}
                 throw new Error(message);
             }
 
             let authData: any = null;
             try {
                 authData = await response.json();
-            } catch {
-            }
+            } catch {}
 
             saveAuthState(regUsername, authData);
 
@@ -173,16 +180,14 @@ const Header = ({
                             }
                         }
                     }
-                } catch {
-                }
+                } catch {}
                 throw new Error(message);
             }
 
             let authData: any = null;
             try {
                 authData = await response.json();
-            } catch {
-            }
+            } catch {}
 
             saveAuthState(loginUsername, authData);
 
@@ -230,29 +235,22 @@ const Header = ({
                 onClick={() => setActiveSection("main")}
                 className="logo"
             >
-                LabHub
+                LibHub
             </a>
             <nav>
                 <a
                     href="#"
-                    onClick={() => setActiveSection("labs")}
+                    onClick={() => handleProtectedNavClick("labs")}
                     className={activeSection === "labs" ? "active" : ""}
                 >
-                    Labs
+                    Материалы
                 </a>
                 <a
                     href="#"
-                    onClick={() => setActiveSection("manuals")}
+                    onClick={() => handleProtectedNavClick("manuals")}
                     className={activeSection === "manuals" ? "active" : ""}
                 >
                     Дисциплины
-                </a>
-                <a
-                    href="#"
-                    onClick={() => setActiveSection("search")}
-                    className={activeSection === "search" ? "active" : ""}
-                >
-                    Search
                 </a>
             </nav>
 
@@ -386,7 +384,6 @@ const Header = ({
                                     : "Зарегистрироваться"}
                             </button>
                         </form>
-
                     </div>
                 </div>
             )}

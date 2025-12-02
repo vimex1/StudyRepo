@@ -17,10 +17,9 @@ type Task = {
     type?: string;
     status?: string;
     created_at?: string;
-    topic?: Topic | number | string | null;
-    file_url?: string;
-    url?: string;
-    file?: string;
+    has_solution?: boolean;
+    solution_available?: boolean;
+    solution?: string | null;
     [key: string]: any;
 };
 
@@ -37,6 +36,11 @@ const Manuals: React.FC = () => {
     const [tasksLoading, setTasksLoading] = useState(false);
     const [tasksError, setTasksError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
+
+    const [downloading, setDownloading] = useState<{
+        id: number | string;
+        kind: "file" | "solution";
+    } | null>(null);
 
     const getAccessToken = (): string | null => {
         if (typeof window === "undefined") return null;
@@ -65,9 +69,7 @@ const Manuals: React.FC = () => {
     const getTopicInitials = (topic: Topic): string => {
         const name = getTopicTitle(topic);
         const words = name.split(/\s+/).filter(Boolean);
-        if (words.length === 1) {
-            return words[0].slice(0, 2).toUpperCase();
-        }
+        if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
         return (words[0][0] + words[1][0]).toUpperCase();
     };
 
@@ -81,18 +83,6 @@ const Manuals: React.FC = () => {
         );
     };
 
-    const getTaskDownloadUrl = (task: Task): string | null => {
-        if (task.file_url && typeof task.file_url === "string")
-            return task.file_url;
-        if (task.file && typeof task.file === "string") return task.file;
-        if (task.url && typeof task.url === "string") return task.url;
-        if (task.document && typeof task.document === "string")
-            return task.document;
-        if (task.attachment && typeof task.attachment === "string")
-            return task.attachment;
-        return null;
-    };
-
     const formatDate = (value?: string): string => {
         if (!value) return "";
         try {
@@ -104,6 +94,18 @@ const Manuals: React.FC = () => {
         }
     };
 
+    const hasSolution = (task: Task): boolean => {
+        const raw =
+            (task as any).has_solution ??
+            (task as any).hasSolution ??
+            (task as any).solution_available ??
+            (task as any).solution;
+        if (typeof raw === "boolean") return raw;
+        if (typeof raw === "number") return raw === 1;
+        if (typeof raw === "string") return raw.trim().length > 0;
+        return false;
+    };
+
     const loadTopics = async () => {
         setTopicsLoading(true);
         setTopicsError(null);
@@ -112,9 +114,7 @@ const Manuals: React.FC = () => {
                 Accept: "application/json",
             };
             const token = getAccessToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
+            if (token) headers["Authorization"] = `Bearer ${token}`;
 
             const response = await fetch(`${API_BASE_URL}/api/labs/topics`, {
                 method: "GET",
@@ -160,9 +160,7 @@ const Manuals: React.FC = () => {
                 Accept: "application/json",
             };
             const token = getAccessToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
+            if (token) headers["Authorization"] = `Bearer ${token}`;
 
             const response = await fetch(
                 `${API_BASE_URL}/api/labs/tasks/${topic.id}`,
@@ -227,12 +225,71 @@ const Manuals: React.FC = () => {
         return Math.max(1, Math.ceil(tasks.length / PAGE_SIZE) || 1);
     }, [tasks.length]);
 
-    const handlePrevPage = () => {
-        setPage((prev) => Math.max(1, prev - 1));
-    };
-
-    const handleNextPage = () => {
+    const handlePrevPage = () => setPage((prev) => Math.max(1, prev - 1));
+    const handleNextPage = () =>
         setPage((prev) => Math.min(totalPages, prev + 1));
+
+    const downloadTaskFile = async (task: Task, kind: "file" | "solution") => {
+        if (!task.id) return;
+        const token = getAccessToken();
+        if (!token) {
+            alert("Сначала войдите в систему, чтобы скачивать файлы.");
+            return;
+        }
+
+        setDownloading({ id: task.id, kind });
+
+        try {
+            const headers: HeadersInit = { Accept: "*/*" };
+            headers["Authorization"] = `Bearer ${token}`;
+
+            const suffix =
+                kind === "solution" ? "download-solution" : "download";
+
+            const response = await fetch(
+                `${API_BASE_URL}/api/labs/tasks/${task.id}/${suffix}`,
+                { method: "GET", headers }
+            );
+
+            if (!response.ok) {
+                if (response.status === 404 && kind === "solution") {
+                    alert("Для этого материала нет загруженного решения.");
+                    return;
+                }
+                throw new Error("Не удалось скачать файл.");
+            }
+
+            const blob = await response.blob();
+
+            let filename = `task-${task.id}${
+                kind === "solution" ? "-solution" : ""
+            }`;
+            const disposition =
+                response.headers.get("Content-Disposition") ||
+                response.headers.get("content-disposition");
+
+            if (disposition) {
+                const match = disposition.match(
+                    /filename\*?=(?:UTF-8''|")?([^\";]+)/i
+                );
+                if (match && match[1]) {
+                    filename = decodeURIComponent(match[1].replace(/"/g, ""));
+                }
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e: any) {
+            alert(e.message || "Ошибка при скачивании файла.");
+        } finally {
+            setDownloading(null);
+        }
     };
 
     return (
@@ -328,8 +385,15 @@ const Manuals: React.FC = () => {
                             <>
                                 <ul className="materials-list">
                                     {paginatedTasks.map((task) => {
-                                        const downloadUrl =
-                                            getTaskDownloadUrl(task);
+                                        const isFileLoading =
+                                            downloading &&
+                                            downloading.id === task.id &&
+                                            downloading.kind === "file";
+                                        const isSolutionLoading =
+                                            downloading &&
+                                            downloading.id === task.id &&
+                                            downloading.kind === "solution";
+
                                         return (
                                             <li
                                                 key={
@@ -362,16 +426,47 @@ const Manuals: React.FC = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                                {downloadUrl && (
-                                                    <a
-                                                        href={downloadUrl}
+                                                <div className="download-group">
+                                                    <button
+                                                        type="button"
                                                         className="download-btn"
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
+                                                        onClick={() =>
+                                                            downloadTaskFile(
+                                                                task,
+                                                                "file"
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isFileLoading ||
+                                                            false
+                                                        }
                                                     >
-                                                        Скачать
-                                                    </a>
-                                                )}
+                                                        {isFileLoading
+                                                            ? "Файл..."
+                                                            : "Файл"}
+                                                    </button>
+
+                                                    {hasSolution(task) && (
+                                                        <button
+                                                            type="button"
+                                                            className="download-btn download-btn-secondary"
+                                                            onClick={() =>
+                                                                downloadTaskFile(
+                                                                    task,
+                                                                    "solution"
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                isSolutionLoading ||
+                                                                false
+                                                            }
+                                                        >
+                                                            {isSolutionLoading
+                                                                ? "Решение..."
+                                                                : "Решение"}
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </li>
                                         );
                                     })}
