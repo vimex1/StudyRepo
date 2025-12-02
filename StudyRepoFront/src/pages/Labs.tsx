@@ -103,7 +103,10 @@ const Labs: React.FC = () => {
             (task as any).has_solution ??
             (task as any).hasSolution ??
             (task as any).solution_available ??
-            (task as any).solution;
+            (task as any).solution ??
+            (task as any).solution_file_url ??
+            (task as any).solutionFileUrl;
+
         if (typeof raw === "boolean") return raw;
         if (typeof raw === "number") return raw === 1;
         if (typeof raw === "string") return raw.trim().length > 0;
@@ -183,6 +186,8 @@ const Labs: React.FC = () => {
                 items = (data as any).results;
             } else if (Array.isArray((data as any).items)) {
                 items = (data as any).items;
+            } else {
+                items = [data as Task];
             }
         }
 

@@ -256,7 +256,7 @@ const Header = ({
 
             <div style={{ position: "relative" }}>
                 <button className="account-btn" onClick={handleAccountClick}>
-                    {currentUser ? currentUser : "Account"}
+                    {currentUser ? currentUser : "Аккаунт"}
                 </button>
 
                 {currentUser && isAccountMenuOpen && (
